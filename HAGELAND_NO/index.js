@@ -31,7 +31,7 @@ let HAGELAND_NO = (obj, arrayProduct, arrayProductGroups, channel, resolve, reje
                 Object.keys(numberOfProduts).filter(item => {
                     return isNaN(item) == false
                 }).map(item => {
-                   
+
                     let product = numberOfProduts[item];
                     let price = null;
                     let currency = null
@@ -66,8 +66,8 @@ let HAGELAND_NO = (obj, arrayProduct, arrayProductGroups, channel, resolve, reje
                         href: a.attribs.href,
                         group_img: obj.group_img,
                         parent: obj.title,
-                        title:  obj.title
-
+                        title: obj.title,
+                        isNextLink: true
                     }
                     )
                 });

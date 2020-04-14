@@ -43,12 +43,51 @@ amqp.connect(CONN_URL, async function (error0, connection) {
             let obj = msg.content.toString();
             obj = JSON.parse(obj);
             try {
+                console.log(obj)
+
                 await new Promise((resolve, reject) => {
                     if (obj.source == 'HAGELAND.NO') {
                         HAGELAND_NO(obj, arrayProduct, arrayProductsGroup, channel, resolve, reject)
                     }
                 })
 
+                if (obj.isNextLink != true) {
+                    await new Promise((resolve, reject) => {
+                        amqp.connect(CONN_URL, function (errGroup, connGroup) {
+                            if (errGroup) {
+                                console.log("CONNECTION ERROR");
+                                console.log(errGroup);
+                                reject();
+                                return;
+                            }
+                            connGroup.createChannel(async function (err2, channelGroup) {
+                                if (err2) {
+                                    console.log("CHANEL ERROR");
+                                    console.log(err2);
+                                    channelGroup.close()
+                                    connGroup.close();
+                                    reject();
+                                    return
+
+                                } chGroup = channelGroup;
+                                channelGroup.assertQueue('products-group-queue', {
+                                    durable: true
+                                });
+                                await channelGroup.sendToQueue('products-group-queue', new Buffer(JSON.stringify(obj)), { persistent: true });
+                                setTimeout(() => {
+                                    channelGroup.close();
+                                    connGroup.close();
+                                    resolve();
+
+                                    //  ch.close();
+                                }, 1000)
+                              
+                                resolve();
+
+                            });
+                        })
+                    });
+                }
 
                 await new Promise((resolve, reject) => {
                     amqp.connect(CONN_URL, function (errGroup, connGroup) {
@@ -77,9 +116,13 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                             })
 
                             await Promise.all(promises)
-                            channelGroup.close();
-                            connGroup.close();
-                            resolve();
+                            setTimeout(() => {
+                                channelGroup.close();
+                                connGroup.close();
+                                resolve();
+
+                                //  ch.close();
+                            }, 1000)
 
                         });
                     })
@@ -113,9 +156,14 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                                 return chItem.sendToQueue('product-item-queue', new Buffer(JSON.stringify(item)), { persistent: true });
                             })
                             await Promise.all(promises)
-                            channelItem.close();
-                            connItem.close();
-                            resolve()
+                            
+                            setTimeout(() => {
+                                channelItem.close();
+                                connItem.close();
+                                resolve();
+
+                                //  ch.close();
+                            }, 1000)
 
                         });
                     })
@@ -126,7 +174,6 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                 console.log(err);
                 setTimeout(() => {
                     channel.nack(msg)
-                    channel.close()
 
                 }, 60000)
 
