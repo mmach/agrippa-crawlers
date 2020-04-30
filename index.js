@@ -4,6 +4,7 @@ const redis = require('async-redis');
 var Promise = require('bluebird');
 var HAGELAND_NO = require('./HAGELAND_NO/index.js');
 var BLOMSTERLANDET_SE = require('./BLOMSTERLANDET_SE/index.js');
+var IKEA = require('./IKEA/index.js');
 
 const CONN_URL = process.env.AMQP ? process.env.AMQP : 'amqp://oqxnmzzs:hUxy1BVED5mg9xWl8lvoxw3VAmKBOn7O@squid.rmq.cloudamqp.com/oqxnmzzs';
 const PREFETCH = process.env.PREFETCH ? process.env.PREFETCH : 5;
@@ -54,6 +55,9 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                     if (obj.source == 'BLOMSTERLANDET.SE') {
                         BLOMSTERLANDET_SE(obj, arrayProduct, arrayProductsGroup, channel, resolve, reject)
                     }
+                    if (obj.source == 'IKEA') {
+                        IKEA(obj, arrayProduct, arrayProductsGroup, channel, resolve, reject)
+                    }
                 })
 
                 if (obj.isNextLink != true) {
@@ -86,7 +90,7 @@ amqp.connect(CONN_URL, async function (error0, connection) {
 
                                     //  ch.close();
                                 }, 1000)
-                              
+
                                 resolve();
 
                             });
@@ -161,7 +165,7 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                                 return chItem.sendToQueue('product-item-queue', new Buffer(JSON.stringify(item)), { persistent: true });
                             })
                             await Promise.all(promises)
-                            
+
                             setTimeout(() => {
                                 channelItem.close();
                                 connItem.close();
