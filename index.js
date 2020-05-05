@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 var HAGELAND_NO = require('./HAGELAND_NO/index.js');
 var BLOMSTERLANDET_SE = require('./BLOMSTERLANDET_SE/index.js');
 var IKEA = require('./IKEA/index.js');
-
+var EUROPRIS = require('./EUROPRIS/index.js')
 const CONN_URL = process.env.AMQP ? process.env.AMQP : 'amqp://oqxnmzzs:hUxy1BVED5mg9xWl8lvoxw3VAmKBOn7O@squid.rmq.cloudamqp.com/oqxnmzzs';
 const PREFETCH = process.env.PREFETCH ? process.env.PREFETCH : 5;
 const MAX_CONNECTIONS = process.env.MAX_CONNECTIONS ? process.env.MAX_CONNECTIONS : 10;
@@ -57,6 +57,9 @@ amqp.connect(CONN_URL, async function (error0, connection) {
                     }
                     if (obj.source == 'IKEA') {
                         IKEA(obj, arrayProduct, arrayProductsGroup, channel, resolve, reject)
+                    }
+                    if (obj.source == 'EUROPRIS') {
+                        EUROPRIS(obj, arrayProduct, arrayProductsGroup, channel, resolve, reject)
                     }
                 })
 
